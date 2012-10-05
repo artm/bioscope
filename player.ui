@@ -1,8 +1,5 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>Form</class>
  <widget class="QWidget" name="Form">
   <property name="geometry">
@@ -16,7 +13,53 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGraphicsView" name="canvas"/>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="backBut">
+        <property name="text">
+         <string>back</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="playBut">
+        <property name="text">
+         <string>play</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="stopBut">
+        <property name="text">
+         <string>stop</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="nextBut">
+        <property name="text">
+         <string>next</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="slider">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
+ <resources/>
  <connections/>
 </ui>

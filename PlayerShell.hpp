@@ -10,6 +10,13 @@ class PlayerShell : public QMainWindow
 public:
     PlayerShell(QWidget *parent = 0);
     ~PlayerShell();
+
+public slots:
+    void open();
+
+private:
+    void setupUi();
+    void setupActions();
 };
 
 #endif // PLAYERSHELL_HPP

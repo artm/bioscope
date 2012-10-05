@@ -1,20 +1,25 @@
 QT       += core gui
+CONFIG   += precompile_header link_pkgconfig uitools qtestlib
+
+PKGCONFIG += libavformat libavcodec libavutil libswscale
 
 TARGET = QFFPlayer
 TEMPLATE = app
+PRECOMPILED_HEADER = stable.h
 
 SOURCES += main.cpp\
-        PlayerShell.cpp
+    PlayerShell.cpp \
+    Bioscope.cpp \
+    BioscopeTestSuite.cpp
 
-HEADERS  += PlayerShell.hpp
+HEADERS  += PlayerShell.hpp \
+    stable.h \
+    Bioscope.hpp \
+    BioscopeTestSuite.hpp
 
-INCLUDEPATH += ../ffmpeg-0.8.5
-LIBS += -L../ffmpeg-0.8.5-build/libavcodec -lavcodec \
-        -L../ffmpeg-0.8.5-build/libavformat -lavformat  \
-        -L../ffmpeg-0.8.5-build/libavutil -lavutil  \
-        -L../ffmpeg-0.8.5-build/libswscale -lswscale
 
 FORMS += \
     player.ui
 
-
+RESOURCES += \
+    player.qrc
