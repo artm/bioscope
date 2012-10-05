@@ -1,8 +1,6 @@
 #ifndef BIOSCOPE_HPP
 #define BIOSCOPE_HPP
 
-#include "stable.h"
-
 /// Access to framebased video files
 class Bioscope : public QObject
 {
