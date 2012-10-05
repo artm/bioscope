@@ -17,6 +17,7 @@ HEADERS  += PlayerShell.hpp \
     Bioscope.hpp \
     BioscopeTestSuite.hpp
 
+QMAKE_LFLAGS = -w
 
 FORMS += \
     player.ui
