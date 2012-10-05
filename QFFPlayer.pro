@@ -1,7 +1,10 @@
 QT       += core gui
-CONFIG   += precompile_header link_pkgconfig uitools qtestlib
+CONFIG   += link_pkgconfig uitools qtestlib precompile_header
 
 PKGCONFIG += libavformat libavcodec libavutil libswscale
+# this is somehow necessary for ffmpeg libraries
+DEFINES += __STDC_CONSTANT_MACROS
+QMAKE_CXXFLAGS +=  -Wno-deprecated -Wno-deprecated-declarations -Wno-attributes
 
 TARGET = QFFPlayer
 TEMPLATE = app
