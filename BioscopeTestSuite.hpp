@@ -19,11 +19,14 @@ private slots:
 
     void testBioscope_supportedFile();
     void testBioscope_metadata();
+    void testBioscope_rollRead();
     void testBioscope_seekRead();
 
 private:
     QStringList m_args;
     QString m_goodFilename, m_badFilename;
+    static const QRegExp FRAME_NUM_RE;
+    static const int MS_PER_FRAME;
 };
 
 #endif // BIOSCOPETESTSUITE_HPP
