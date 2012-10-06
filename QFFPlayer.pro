@@ -13,12 +13,14 @@ PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp\
     PlayerShell.cpp \
     Bioscope.cpp \
-    BioscopeTestSuite.cpp
+    BioscopeTestSuite.cpp \
+    BioscopeDriver.cpp
 
 HEADERS  += PlayerShell.hpp \
     stable.h \
     Bioscope.hpp \
-    BioscopeTestSuite.hpp
+    BioscopeTestSuite.hpp \
+    BioscopeDriver.hpp
 
 QMAKE_LFLAGS = -w
 
@@ -27,3 +29,5 @@ FORMS += \
 
 RESOURCES += \
     player.qrc
+
+

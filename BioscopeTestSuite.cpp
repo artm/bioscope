@@ -1,5 +1,6 @@
 #include "BioscopeTestSuite.hpp"
 #include "Bioscope.hpp"
+#include "BioscopeDriver.hpp"
 
 const int BioscopeTestSuite::MS_PER_FRAME = 1000/25;
 const QRegExp BioscopeTestSuite::FRAME_NUM_RE(".*(\\d+)\\.png$");
@@ -88,6 +89,7 @@ void BioscopeTestSuite::testBioscope_rollRead()
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);
+        QCOMPARE( bios.time(), (long long)((frameNum + 1) * MS_PER_FRAME) );
     }
 }
 
@@ -105,10 +107,41 @@ void BioscopeTestSuite::testBioscope_seekRead()
         QVERIFY( refFrame.load(dir.filePath( refFile) ));
 
         bios.seek( frameNum * MS_PER_FRAME);
+        QCOMPARE( bios.time(), (long long)(frameNum * MS_PER_FRAME) );
         frame = bios.frame();
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);
+        QCOMPARE( bios.time(), (long long)((frameNum + 1) * MS_PER_FRAME) );
     }
+}
+
+void BioscopeTestSuite::testBioscopeDriver_openClose()
+{
+    BioscopeDriver driver;
+    QVERIFY(driver.bioscope() == NULL);
+    driver.open(m_goodFilename);
+    QVERIFY(driver.bioscope() != NULL);
+    driver.close();
+    QVERIFY(driver.bioscope() == NULL);
+}
+
+void BioscopeTestSuite::testBioscopeDriver_play()
+{
+    BioscopeDriver driver;
+    driver.open(m_goodFilename);
+
+    driver.play();
+    QTime stopwatch;
+    stopwatch.start();
+
+    QTest::qWait(1000);
+
+    driver.stop();
+
+    qint64 delta = abs( driver.bioscope()->time() - stopwatch.elapsed() );
+    qint64 margin = 2 * MS_PER_FRAME;
+    QVERIFY2( delta < margin,
+              qPrintable( QString("Time difference (%1ms) above margin (%2ms)").arg(delta).arg(margin) ) );
 }
 

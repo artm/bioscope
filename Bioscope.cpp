@@ -1,3 +1,4 @@
+#include "stable.h"
 #include "Bioscope.hpp"
 
 struct Bioscope::Detail {
@@ -16,11 +17,15 @@ struct Bioscope::Detail {
     qint64 duration;
     int width, height;
 
+    /* remember the time */
+    qint64 last_pts;
+
     Detail() :
         formatContext(0), codecContext(0), codec(0),
         vStreamIndex(-1),
         frame(0), frameRGB(0), convertContext(0),
-        duration(0), width(0), height(0)
+        duration(0), width(0), height(0),
+        last_pts(0)
     {
         if (!avInitialized) {
             av_register_all();
@@ -180,6 +185,7 @@ QImage Bioscope::frame()
                         &done,
                         &packet);
             if (done) {
+                m_detail->last_pts = packet.pts + packet.duration; // assuming each frame is a single packet in MJPEG
                 sws_scale(m_detail->convertContext,
                           m_detail->frame->data, m_detail->frame->linesize, 0,
                           m_detail->codecContext->height,
@@ -202,5 +208,14 @@ void Bioscope::seek(qint64 ms)
     AVRational sec = { (int)ms, 1000};
     AVRational ts = av_div_q(sec,
                              m_detail->formatContext->streams[m_detail->vStreamIndex]->time_base);
-    av_seek_frame(m_detail->formatContext, m_detail->vStreamIndex, ts.num/ts.den, 0);
+    m_detail->last_pts = ts.num / ts.den;
+    av_seek_frame(m_detail->formatContext, m_detail->vStreamIndex, m_detail->last_pts, 0);
+}
+
+qint64 Bioscope::time()
+{
+    AVRational pts = { m_detail->last_pts, 1 };
+    AVRational time_base = m_detail->formatContext->streams[m_detail->vStreamIndex]->time_base;
+    AVRational t = av_mul_q(pts, time_base);
+    return 1000 * t.num / t.den; // ms
 }

@@ -33,6 +33,7 @@ public:
     int height() const;
     QImage frame();
     void seek( qint64 ms );
+    qint64 time();
 
     static bool supportedFile(const QString& path);
 signals:
