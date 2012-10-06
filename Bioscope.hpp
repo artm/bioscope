@@ -6,12 +6,30 @@ class Bioscope : public QObject
 {
     Q_OBJECT
 public:
-    class Exception {};
-    class IOError : public Exception {};
-    class UnsupportedFile : public Exception {};
+    struct Error {
+        explicit Error(const QString& message) : m_message(message) {}
+        QString message() { return m_message; }
+    private:
+        QString m_message;
+    };
+    struct IOError : public Error {
+        explicit IOError(const QString& path) : Error(QString("IOError(%1)").arg(path)) {}
+    };
+    struct UnsupportedFile : public Error {
+        explicit UnsupportedFile(const QString& path) : Error(QString("Unsupported file: %1").arg(path)) {}
+    };
+    struct AVError : public Error {
+        explicit AVError(const QString& path, int av_err);
+    };
 
     Bioscope(const QString& path, QObject *parent = 0);
     ~Bioscope();
+
+    qint64 duration() const;
+    int width() const;
+    int height() const;
+    QImage frame();
+    void seek( qint64 ms );
 
     static bool supportedFile(const QString& path);
 signals:
