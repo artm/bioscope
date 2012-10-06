@@ -1,4 +1,5 @@
 #include "BioscopeTestSuite.hpp"
+#include "Bioscope.hpp"
 
 BioscopeTestSuite::BioscopeTestSuite(const QStringList& args) :
     QObject(0),
@@ -13,9 +14,14 @@ BioscopeTestSuite::~BioscopeTestSuite()
 
 int BioscopeTestSuite::runTests()
 {
-    QTest::qExec( this );
-
-    return 1;
+    try {
+        return QTest::qExec( this );
+    } catch (Bioscope::Error& e) {
+        qCritical() << qPrintable(e.message());
+        return 1;
+    } catch (...) {
+        return 1;
+    }
 }
 
 void BioscopeTestSuite::initTestCase()
@@ -43,7 +49,6 @@ void BioscopeTestSuite::cleanup()
 {
 }
 
-# include "Bioscope.hpp"
 void BioscopeTestSuite::testBioscope_supportedFile()
 {
     QVERIFY( !Bioscope::supportedFile("--this-file-should-never-exist--") );

@@ -45,7 +45,7 @@ struct Bioscope::Detail {
 };
 
 struct AVCheck {
-    AVCheck(QString path) : m_path(path) {}
+    AVCheck(const QString& path) : m_path(path) {}
     void operator<<(int av_err) {
         if (av_err) {
             throw Bioscope::AVError(m_path, av_err);
@@ -58,7 +58,7 @@ private:
 bool Bioscope::Detail::avInitialized = false;
 
 Bioscope::AVError::AVError(const QString &path, int av_err) :
-    Error(QString("FFMpeg error at %1: '%2'").arg(path).arg( Detail::fferror(av_err) ))
+    Error(QString("FFMpeg error at %1: %2").arg(path).arg( Detail::fferror(av_err) ))
 {}
 
 Bioscope::Bioscope(const QString & _path, QObject *parent) :
@@ -66,6 +66,9 @@ Bioscope::Bioscope(const QString & _path, QObject *parent) :
     m_detail( new Detail )
 {
     QString path = QFileInfo(_path).canonicalFilePath();
+
+    if (path.isEmpty())
+        throw NoFile(_path);
 
     AVCheck check(path);
 

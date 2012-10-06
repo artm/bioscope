@@ -15,6 +15,9 @@ public:
     struct IOError : public Error {
         explicit IOError(const QString& path) : Error(QString("IOError(%1)").arg(path)) {}
     };
+    struct NoFile : public Error {
+        explicit NoFile(const QString& path) : Error(QString("File %1 doesn't exist").arg(path)) {}
+    };
     struct UnsupportedFile : public Error {
         explicit UnsupportedFile(const QString& path) : Error(QString("Unsupported file: %1").arg(path)) {}
     };
