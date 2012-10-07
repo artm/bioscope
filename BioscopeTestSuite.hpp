@@ -22,7 +22,6 @@ private slots:
     void testBioscope_rollRead();
     void testBioscope_seekRead();
 
-    void testBioscopeDriver_openClose();
     void testBioscopeDriver_play();
     void testBioscopeDriver_autoStop();
 

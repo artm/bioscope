@@ -116,16 +116,6 @@ void BioscopeTestSuite::testBioscope_seekRead()
     }
 }
 
-void BioscopeTestSuite::testBioscopeDriver_openClose()
-{
-    BioscopeDriver driver;
-    QVERIFY(driver.bioscope() == NULL);
-    driver.open(m_goodFilename);
-    QVERIFY(driver.bioscope() != NULL);
-    driver.close();
-    QVERIFY(driver.bioscope() == NULL);
-}
-
 void BioscopeTestSuite::testBioscopeDriver_play()
 {
     BioscopeDriver driver;
@@ -142,7 +132,7 @@ void BioscopeTestSuite::testBioscopeDriver_play()
     driver.stop();
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
 
-    qint64 delta = abs( driver.bioscope()->time() - stopwatch.elapsed() );
+    qint64 delta = abs( driver.time() - stopwatch.elapsed() );
     qint64 margin = 2 * MS_PER_FRAME;
     QVERIFY2( delta < margin,
               qPrintable( QString("Time difference (%1ms) above margin (%2ms)").arg(delta).arg(margin) ) );
@@ -154,7 +144,7 @@ void BioscopeTestSuite::testBioscopeDriver_autoStop()
     driver.open(m_goodFilename);
 
     // jump at half second before end
-    driver.bioscope()->seek( driver.bioscope()->duration() - 500 );
+    driver.seek( driver.duration() - 500 );
 
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
     driver.play();

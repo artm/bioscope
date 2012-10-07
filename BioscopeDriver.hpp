@@ -17,15 +17,17 @@ public:
     BioscopeDriver(QObject *parent = 0);
     ~BioscopeDriver();
 
-    Bioscope * bioscope() { return m_bioscope; }
     void open(const QString& path);
     void close();
     State state() const { return m_state; }
+    qint64 duration() const;
+    qint64 time() const;
 signals:
 
 public slots:
     void play();
     void stop();
+    void seek(qint64 ms);
 
 private:
     void timerEvent(QTimerEvent *);

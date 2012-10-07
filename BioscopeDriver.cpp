@@ -25,6 +25,7 @@ void BioscopeDriver::open(const QString &path)
 
 void BioscopeDriver::close()
 {
+    stop();
     delete m_bioscope;
     m_bioscope = NULL;
 }
@@ -46,5 +47,28 @@ void BioscopeDriver::stop()
 
 void BioscopeDriver::timerEvent(QTimerEvent *)
 {
+    Q_ASSERT(m_bioscope);
     m_bioscope->frame();
+}
+
+qint64 BioscopeDriver::time() const
+{
+    if (m_bioscope)
+        return m_bioscope->time();
+    else
+        return 0;
+}
+
+void BioscopeDriver::seek(qint64 ms)
+{
+    if (m_bioscope)
+        m_bioscope->seek(ms);
+}
+
+qint64 BioscopeDriver::duration() const
+{
+    if (m_bioscope)
+        return m_bioscope->duration();
+    else
+        return 0;
 }
