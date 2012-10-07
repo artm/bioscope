@@ -1,7 +1,7 @@
 #ifndef PLAYERSHELL_HPP
 #define PLAYERSHELL_HPP
 
-#include <QtGui/QMainWindow>
+#include "stable.h"
 
 class PlayerShell : public QMainWindow
 {
@@ -17,6 +17,8 @@ public slots:
 private:
     void setupUi();
     void setupActions();
+
+
 };
 
 #endif // PLAYERSHELL_HPP

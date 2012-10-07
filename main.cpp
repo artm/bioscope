@@ -1,5 +1,3 @@
-#include <QtGui/QApplication>
-
 #include "PlayerShell.hpp"
 #include "BioscopeTestSuite.hpp"
 
