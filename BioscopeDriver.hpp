@@ -26,6 +26,7 @@ public:
     int height() const;
 
 signals:
+    void timedFrame(qint64 ms, QImage frame);
 
 public slots:
     void play();
@@ -34,6 +35,8 @@ public slots:
 
 private:
     void timerEvent(QTimerEvent *);
+
+    void emitCurrentFrame();
 
     Bioscope * m_bioscope;
     int m_timerId;

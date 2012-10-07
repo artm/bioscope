@@ -48,29 +48,33 @@ void BioscopeDriver::stop()
 void BioscopeDriver::timerEvent(QTimerEvent *)
 {
     Q_ASSERT(m_bioscope);
-    m_bioscope->frame();
+    emitCurrentFrame();
 }
 
 qint64 BioscopeDriver::time() const
 {
-    if (m_bioscope)
-        return m_bioscope->time();
-    else
-        return 0;
+    return m_bioscope ? m_bioscope->time() : 0;
 }
 
 void BioscopeDriver::seek(qint64 ms)
 {
-    if (m_bioscope)
+    if (m_bioscope) {
         m_bioscope->seek(ms);
+        emitCurrentFrame();
+    }
 }
 
 qint64 BioscopeDriver::duration() const
 {
-    if (m_bioscope)
-        return m_bioscope->duration();
-    else
-        return 0;
+    return m_bioscope ? m_bioscope->duration() : 0;
+}
+
+void BioscopeDriver::emitCurrentFrame()
+{
+    QImage frame = m_bioscope->frame();
+    emit timedFrame( m_bioscope->time(), frame );
+}
+
 int BioscopeDriver::width() const
 {
     return m_bioscope ? m_bioscope->width() : 0;
