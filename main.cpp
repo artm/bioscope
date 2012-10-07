@@ -13,6 +13,11 @@ int main(int argc, char *argv[])
     } else {
         PlayerShell w;
         w.show();
+
+        if (argc > 1) {
+            w.open(argv[1]);
+        }
+
         return a.exec();
     }
 }

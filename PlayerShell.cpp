@@ -57,9 +57,13 @@ void PlayerShell::setupActions()
 
 void PlayerShell::open()
 {
-    QString path = QFileDialog::getOpenFileName(this, "Open video file",
-                                                QDesktopServices::storageLocation(QDesktopServices::MoviesLocation));
+    open( QFileDialog::getOpenFileName(this, "Open video file",
+                                       QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)) );
 
+}
+
+void PlayerShell::open(const QString& path)
+{
     if (Bioscope::supportedFile(path)) {
         m_detail->driver->open(path);
         m_detail->driver->seek(0);

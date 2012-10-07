@@ -16,6 +16,7 @@ public:
 
 public slots:
     void open();
+    void open(const QString& path);
     void on_playBut_clicked();
     void on_stopBut_clicked();
     void on_slider_valueChanged(int value);
