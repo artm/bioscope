@@ -1,6 +1,7 @@
 #include "BioscopeTestSuite.hpp"
 #include "Bioscope.hpp"
 #include "BioscopeDriver.hpp"
+#include "PlayerShell.hpp"
 
 const int BioscopeTestSuite::MS_PER_FRAME = 1000/25;
 const QRegExp BioscopeTestSuite::FRAME_NUM_RE(".*(\\d+)\\.png$");
@@ -130,7 +131,7 @@ void TestWithin( T actual, T expected, T margin,
 
 void BioscopeTestSuite::on_timedFrame(qint64 ms, QImage )
 {
-    TEST_IS_WITHIN( ms, (qint64)m_stopwatch.elapsed(), 2LL * MS_PER_FRAME);
+    TEST_IS_WITHIN( ms, (qint64)m_stopwatch.elapsed(), 1LL * MS_PER_FRAME);
 }
 
 void BioscopeTestSuite::testBioscopeDriver_play()
@@ -150,7 +151,7 @@ void BioscopeTestSuite::testBioscopeDriver_play()
     driver.stop();
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
 
-    TEST_IS_WITHIN( driver.time(), (qint64)m_stopwatch.elapsed(), 2LL * MS_PER_FRAME );
+    TEST_IS_WITHIN( driver.time(), (qint64)m_stopwatch.elapsed(), 1LL * MS_PER_FRAME );
 }
 
 void BioscopeTestSuite::testBioscopeDriver_autoStop()
@@ -164,10 +165,26 @@ void BioscopeTestSuite::testBioscopeDriver_autoStop()
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
     driver.play();
     QCOMPARE( driver.state(), BioscopeDriver::PLAYING );
-    QTime stopwatch;
-    stopwatch.start();
 
     QTest::qWait(600);
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
 }
 
+void BioscopeTestSuite::testBioscopeGUI_timing()
+{
+    PlayerShell w;
+    w.open(m_goodFilename);
+    w.showMaximized();
+
+    BioscopeDriver * driver = w.findChild<BioscopeDriver*>("bioscope");
+    connect(driver, SIGNAL(timedFrame(qint64,QImage)), SLOT(on_timedFrame(qint64,QImage)));
+
+    QWidget * play = w.findChild<QWidget*>("playBut");
+    QWidget * stop = w.findChild<QWidget*>("stopBut");
+
+    QTest::mouseClick(play, Qt::LeftButton);
+    m_stopwatch.start();
+    QTest::qWait(5000);
+
+    QTest::mouseClick(stop, Qt::LeftButton);
+}

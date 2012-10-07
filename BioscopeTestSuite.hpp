@@ -28,6 +28,8 @@ private slots:
     void testBioscopeDriver_play();
     void testBioscopeDriver_autoStop();
 
+    void testBioscopeGUI_timing();
+
 private:
     QStringList m_args;
     QString m_goodFilename, m_badFilename;
