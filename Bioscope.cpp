@@ -1,4 +1,3 @@
-#include "stable.h"
 #include "Bioscope.hpp"
 
 struct Bioscope::Detail {
@@ -185,11 +184,13 @@ QImage Bioscope::frame()
                         &done,
                         &packet);
             if (done) {
-                m_detail->last_pts = packet.pts + packet.duration; // assuming each frame is a single packet in MJPEG
                 sws_scale(m_detail->convertContext,
                           m_detail->frame->data, m_detail->frame->linesize, 0,
                           m_detail->codecContext->height,
                           m_detail->frameRGB->data, m_detail->frameRGB->linesize);
+
+                m_detail->last_pts = packet.pts + packet.duration; // assuming each frame is a single packet in MJPEG
+
                 // convert to QImage and return
                 return QImage((uchar*)m_detail->frameBytes.data(),
                                m_detail->codecContext->width,
@@ -199,6 +200,7 @@ QImage Bioscope::frame()
         }
     }
 
+    emit streamEnd();
     return QImage();
 }
 

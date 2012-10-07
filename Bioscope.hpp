@@ -1,6 +1,8 @@
 #ifndef BIOSCOPE_HPP
 #define BIOSCOPE_HPP
 
+#include "stable.h"
+
 /// Access to framebased video files
 class Bioscope : public QObject
 {
@@ -37,6 +39,8 @@ public:
 
     static bool supportedFile(const QString& path);
 signals:
+
+    void streamEnd();
 
 public slots:
 

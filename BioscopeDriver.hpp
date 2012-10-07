@@ -10,12 +10,17 @@ class BioscopeDriver : public QObject
 {
     Q_OBJECT
 public:
+    enum State {
+        STOPPED,
+        PLAYING
+    };
     BioscopeDriver(QObject *parent = 0);
     ~BioscopeDriver();
 
     Bioscope * bioscope() { return m_bioscope; }
     void open(const QString& path);
     void close();
+    State state() const { return m_state; }
 signals:
 
 public slots:
@@ -27,6 +32,7 @@ private:
 
     Bioscope * m_bioscope;
     int m_timerId;
+    State m_state;
 
     static const int TICK_INTERVAL;
 };

@@ -24,6 +24,7 @@ private slots:
 
     void testBioscopeDriver_openClose();
     void testBioscopeDriver_play();
+    void testBioscopeDriver_autoStop();
 
 private:
     QStringList m_args;
