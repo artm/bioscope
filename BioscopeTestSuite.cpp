@@ -9,7 +9,6 @@ BioscopeTestSuite::BioscopeTestSuite(const QStringList& args) :
     QObject(0),
     m_args(args)
 {
-    m_args.pop_front(); // don't care about program name
 }
 
 BioscopeTestSuite::~BioscopeTestSuite()
@@ -20,7 +19,9 @@ BioscopeTestSuite::~BioscopeTestSuite()
 int BioscopeTestSuite::runTests()
 {
     try {
-        return QTest::qExec( this );
+        QStringList args = m_args;
+        args.removeAll("--test");
+        return QTest::qExec( this, args );
     } catch (Bioscope::Error& e) {
         qCritical() << qPrintable(e.message());
         return 1;
@@ -39,14 +40,8 @@ void BioscopeTestSuite::cleanupTestCase()
 
 void BioscopeTestSuite::init()
 {
-    QStringList files;
-    foreach(QString arg, m_args) {
-        if (!arg.startsWith("-"))
-            files << arg;
-    }
-    QCOMPARE(files.length(), 2);
-    m_goodFilename = files[0];
-    m_badFilename = files[1];
+    m_goodFilename = "data/edje.mov";
+    m_badFilename = "data/bad-movie.mov";
 }
 
 void BioscopeTestSuite::cleanup()
