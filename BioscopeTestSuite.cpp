@@ -116,21 +116,34 @@ void BioscopeTestSuite::testBioscope_seekRead()
     }
 }
 
+template <typename T>
+void TestWithin( T actual, T expected, T margin,
+                 const char * actualStr,
+                 const char * expectedStr,
+                 const char * file, int line
+                 )
+{
+    T delta = abs(actual-expected);
+    if ( delta > margin )
+        QTest::qFail(qPrintable(
+                  QString( "\n   The difference between [%1 = %2] and [%3 = %4] above margin [%5 > %6]")
+                  .arg(actualStr).arg(actual).arg(expectedStr).arg(expected).arg(delta).arg(margin)), file, line );
+
+}
+
+#define TEST_IS_WITHIN(actual, expected, margin) TestWithin((actual), (expected), (margin), #actual, #expected, __FILE__, __LINE__)
+
 void BioscopeTestSuite::on_timedFrame(qint64 ms, QImage )
 {
-    qint64 delta = abs( ms - m_stopwatch.elapsed() );
-    qint64 margin = 2 * MS_PER_FRAME;
-
-    QVERIFY2( delta < margin,
-              qPrintable( QString("Time difference (%1ms) above margin (%2ms)").arg(delta).arg(margin) ) );
+    TEST_IS_WITHIN( ms, (qint64)m_stopwatch.elapsed(), 2LL * MS_PER_FRAME);
 }
 
 void BioscopeTestSuite::testBioscopeDriver_play()
 {
     BioscopeDriver driver;
-    driver.open(m_goodFilename);
-
     connect(&driver, SIGNAL(timedFrame(qint64,QImage)), SLOT(on_timedFrame(qint64,QImage)));
+
+    driver.open(m_goodFilename);
 
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
     driver.play();
@@ -142,10 +155,7 @@ void BioscopeTestSuite::testBioscopeDriver_play()
     driver.stop();
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
 
-    qint64 delta = abs( driver.time() - m_stopwatch.elapsed() );
-    qint64 margin = 2 * MS_PER_FRAME;
-    QVERIFY2( delta < margin,
-              qPrintable( QString("Time difference (%1ms) above margin (%2ms)").arg(delta).arg(margin) ) );
+    TEST_IS_WITHIN( driver.time(), (qint64)m_stopwatch.elapsed(), 2LL * MS_PER_FRAME );
 }
 
 void BioscopeTestSuite::testBioscopeDriver_autoStop()
