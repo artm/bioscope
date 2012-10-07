@@ -22,6 +22,9 @@ public:
     State state() const { return m_state; }
     qint64 duration() const;
     qint64 time() const;
+    int width() const;
+    int height() const;
+
 signals:
 
 public slots:

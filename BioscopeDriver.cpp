@@ -71,4 +71,12 @@ qint64 BioscopeDriver::duration() const
         return m_bioscope->duration();
     else
         return 0;
+int BioscopeDriver::width() const
+{
+    return m_bioscope ? m_bioscope->width() : 0;
+}
+
+int BioscopeDriver::height() const
+{
+    return m_bioscope ? m_bioscope->height() : 0;
 }
