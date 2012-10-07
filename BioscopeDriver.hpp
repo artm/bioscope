@@ -1,6 +1,8 @@
 #ifndef BIOSCOPEDRIVER_HPP
 #define BIOSCOPEDRIVER_HPP
 
+#include "stable.h"
+
 class Bioscope;
 
 // encapsulate Bioscope in the separate thread and provide playback API
@@ -21,7 +23,12 @@ public slots:
     void stop();
 
 private:
+    void timerEvent(QTimerEvent *);
+
     Bioscope * m_bioscope;
+    int m_timerId;
+
+    static const int TICK_INTERVAL;
 };
 
 #endif // BIOSCOPEDRIVER_HPP
