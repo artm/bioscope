@@ -45,6 +45,7 @@ void PlayerShell::setupUi()
 
     m_detail->slider = findChild<QAbstractSlider *>("slider");
 
+    resizeUI();
 }
 
 void PlayerShell::setupActions()
@@ -83,7 +84,6 @@ void PlayerShell::on_stopBut_clicked()
 
 void PlayerShell::on_slider_valueChanged(int value)
 {
-    qDebug() << "sliding";
     qint64 pos =  m_detail->driver->duration() * value / m_detail->slider->maximum();
     m_detail->driver->seek( pos );
 }
@@ -108,10 +108,10 @@ void PlayerShell::resizeEvent(QResizeEvent *)
 void PlayerShell::resizeUI()
 {
     m_detail->canvas->fitInView( m_detail->pixItem, Qt::KeepAspectRatio );
-    /*
+    m_detail->slider->blockSignals(true);
     m_detail->slider->setMaximum( m_detail->slider->width() );
     if (m_detail->driver->duration())
         m_detail->slider->setValue( m_detail->slider->maximum() * m_detail->driver->time() / m_detail->driver->duration() );
-    */
+    m_detail->slider->blockSignals(false);
 }
 
