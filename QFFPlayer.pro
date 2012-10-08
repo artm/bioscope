@@ -20,13 +20,15 @@ SOURCES += main.cpp\
     PlayerShell.cpp \
     Bioscope.cpp \
     BioscopeTestSuite.cpp \
-    BioscopeDriver.cpp
+    BioscopeDriver.cpp \
+    BioscopeThread.cpp
 
 HEADERS  += PlayerShell.hpp \
     stable.h \
     Bioscope.hpp \
     BioscopeTestSuite.hpp \
-    BioscopeDriver.hpp
+    BioscopeDriver.hpp \
+    BioscopeThread.hpp
 
 QMAKE_LFLAGS = -w
 
@@ -35,5 +37,3 @@ FORMS += \
 
 RESOURCES += \
     player.qrc
-
-

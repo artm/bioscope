@@ -12,7 +12,7 @@ public:
     int runTests();
 
 protected slots:
-    void on_timedFrame(qint64 ms, QImage frame);
+    void on_display(QImage frame);
 
 private slots:
     void initTestCase(); // will be called before the first testfunction is executed.
@@ -25,6 +25,7 @@ private slots:
     void testBioscope_rollRead();
     void testBioscope_seekRead();
 
+    void testBioscopeDriver_metadata();
     void testBioscopeDriver_play();
     void testBioscopeDriver_autoStop();
 
@@ -34,6 +35,7 @@ private:
     QStringList m_args;
     QString m_goodFilename, m_badFilename;
     QTime m_stopwatch;
+    qint64 m_expectedTime;
 
     static const QRegExp FRAME_NUM_RE;
     static const int MS_PER_FRAME;

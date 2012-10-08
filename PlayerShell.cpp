@@ -88,10 +88,12 @@ void PlayerShell::on_slider_valueChanged(int value)
     m_detail->driver->seek( pos );
 }
 
-void PlayerShell::on_bioscope_timedFrame(qint64 ms, QImage frame)
+void PlayerShell::on_bioscope_display(QImage frame)
 {
     m_detail->slider->blockSignals(true);
-    m_detail->slider->setValue( m_detail->slider->maximum() * ms / m_detail->driver->duration() );
+    m_detail->slider->setValue( (qint64) m_detail->slider->maximum()
+                                * m_detail->driver->time()
+                                / m_detail->driver->duration() );
     m_detail->slider->blockSignals(false);
 
     m_detail->pixItem->setPixmap( QPixmap::fromImage(frame) );

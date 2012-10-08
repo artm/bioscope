@@ -21,7 +21,7 @@ public slots:
     void on_stopBut_clicked();
     void on_slider_valueChanged(int value);
 
-    void on_bioscope_timedFrame(qint64 ms, QImage frame);
+    void on_bioscope_display(QImage frame);
 
 private:
     void resizeEvent(QResizeEvent *);

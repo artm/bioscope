@@ -1,13 +1,15 @@
 #include "BioscopeDriver.hpp"
+#include "BioscopeThread.hpp"
 #include "Bioscope.hpp"
 
 const int BioscopeDriver::TICK_INTERVAL = 40;
 
 BioscopeDriver::BioscopeDriver(QObject *parent) :
     QObject(parent),
-    m_bioscope(0),
+    m_bioscopeThread(0),
     m_timerId(-1),
-    m_state(STOPPED)
+    m_state(STOPPED),
+    m_duration(0), m_width(0), m_height(0)
 {
 }
 
@@ -19,21 +21,39 @@ BioscopeDriver::~BioscopeDriver()
 void BioscopeDriver::open(const QString &path)
 {
     close();
-    m_bioscope = new Bioscope(path, this);
-    connect(m_bioscope, SIGNAL(streamEnd()), SLOT(stop()));
+    m_bioscopeThread = new BioscopeThread(path, this);
+    connect(this, SIGNAL(scheduleSeek(qint64)), m_bioscopeThread, SLOT(seek(qint64)));
+    connect(this, SIGNAL(scheduleFrame(QImage&)), m_bioscopeThread, SLOT(frame(QImage&)));
+    connect(m_bioscopeThread, SIGNAL(streamEnd()), SLOT(stop()));
+
+    Bioscope* bios = m_bioscopeThread->findChild<Bioscope*>();
+    m_duration = bios->duration();
+    m_width = bios->width();
+    m_height = bios->height();
+
+    m_bioscopeThread->start();
 }
 
 void BioscopeDriver::close()
 {
     stop();
-    delete m_bioscope;
-    m_bioscope = NULL;
+    if (m_bioscopeThread) {
+        m_bioscopeThread->quit();
+        m_bioscopeThread->wait(1000);
+        delete m_bioscopeThread;
+        m_bioscopeThread = NULL;
+    }
+    m_state = STOPPED;
+    m_duration = 0;
+    m_width = m_height = 0;
 }
 
 void BioscopeDriver::play()
 {
     m_timerId = startTimer(TICK_INTERVAL);
     m_state = PLAYING;
+    // schedule the first frame
+    emit scheduleFrame(m_frame);
 }
 
 void BioscopeDriver::stop()
@@ -47,42 +67,33 @@ void BioscopeDriver::stop()
 
 void BioscopeDriver::timerEvent(QTimerEvent *)
 {
-    Q_ASSERT(m_bioscope);
-    emitCurrentFrame();
+    // display oldest available image and schedule read
+    emit display(m_frame);
+    // after having displayed m_frame is available for reading
+    emit scheduleFrame(m_frame);
 }
 
 qint64 BioscopeDriver::time() const
 {
-    return m_bioscope ? m_bioscope->time() : 0;
-}
-
-void BioscopeDriver::seek(qint64 ms)
-{
-    if (m_bioscope) {
-        m_bioscope->seek(ms);
-        emitCurrentFrame();
-    }
+    return m_bioscopeThread ? m_bioscopeThread->time() : 0;
 }
 
 qint64 BioscopeDriver::duration() const
 {
-    return m_bioscope ? m_bioscope->duration() : 0;
-}
-
-void BioscopeDriver::emitCurrentFrame()
-{
-    qint64 time = m_bioscope->time();
-
-    m_bioscope->frame( m_frame );
-    emit timedFrame( time , m_frame );
+    return m_duration;
 }
 
 int BioscopeDriver::width() const
 {
-    return m_bioscope ? m_bioscope->width() : 0;
+    return m_width;
 }
 
 int BioscopeDriver::height() const
 {
-    return m_bioscope ? m_bioscope->height() : 0;
+    return m_height;
+}
+
+void BioscopeDriver::seek(qint64 ms)
+{
+    emit scheduleSeek(ms);
 }

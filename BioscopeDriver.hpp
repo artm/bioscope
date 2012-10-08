@@ -3,7 +3,7 @@
 
 #include "stable.h"
 
-class Bioscope;
+class BioscopeThread;
 
 // encapsulate Bioscope in the separate thread and provide playback API
 class BioscopeDriver : public QObject
@@ -26,7 +26,12 @@ public:
     int height() const;
 
 signals:
-    void timedFrame(qint64 ms, QImage frame);
+    // to be connected to m_bioscopeThread...
+    void scheduleSeek(qint64 ms);
+    void scheduleFrame(QImage& img);
+
+    // emitted at playback rate
+    void display(QImage img);
 
 public slots:
     void play();
@@ -36,12 +41,14 @@ public slots:
 private:
     void timerEvent(QTimerEvent *);
 
-    void emitCurrentFrame();
-
-    Bioscope * m_bioscope;
+    BioscopeThread * m_bioscopeThread;
     int m_timerId;
     State m_state;
     QImage m_frame;
+
+    // cached metadata
+    qint64 m_duration;
+    int m_width, m_height;
 
     static const int TICK_INTERVAL;
 };
