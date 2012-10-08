@@ -153,7 +153,7 @@ void BioscopeTestSuite::testBioscopeDriver_play()
     driver.stop();
     int playTime = m_stopwatch.elapsed();
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
-    TEST_IS_WITHIN( (int)driver.time(), playTime, MS_PER_FRAME );
+    TEST_IS_WITHIN( (int)driver.time(), playTime, 2 * MS_PER_FRAME );
 }
 
 void BioscopeTestSuite::testBioscopeDriver_autoStop()
@@ -190,6 +190,6 @@ void BioscopeTestSuite::testBioscopeGUI_timing()
 
     int playTime = m_stopwatch.elapsed();
     QCOMPARE( driver->state(), BioscopeDriver::STOPPED );
-    TEST_IS_WITHIN( (int)driver->time(), playTime, MS_PER_FRAME );
+    TEST_IS_WITHIN( (int)driver->time(), playTime, 2 * MS_PER_FRAME );
 }
 
