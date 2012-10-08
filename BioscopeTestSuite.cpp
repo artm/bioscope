@@ -198,7 +198,27 @@ void BioscopeTestSuite::testBioscopeDriver_seekWhileRolling()
 
 }
 
+void BioscopeTestSuite::testBioscopeDriver_seekWhileNotRolling()
+{
+    BioscopeDriver driver;
+    QSignalSpy spy(&driver, SIGNAL(display(QImage)));
 
+    driver.open(m_goodFilename);
+
+    QCOMPARE( spy.count(), 0);
+
+    driver.seek(0);
+    QTest::qWait(50);
+    QCOMPARE( spy.count(), 1);
+
+    driver.seek(5000);
+    QTest::qWait(50);
+    QCOMPARE( spy.count(), 2);
+
+    driver.seek(2500);
+    QTest::qWait(50);
+    QCOMPARE( spy.count(), 3);
+}
 
 void BioscopeTestSuite::testBioscopeGUI_timing()
 {

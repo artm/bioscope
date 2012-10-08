@@ -121,7 +121,10 @@ void BioscopeDriver::displayOldest()
         emit display( *(ti.img) );
 
         // after having displayed m_detail->frame is available for reading
-        m_detail->bioscopeThread->addFrame( ti.img );
+        if (m_detail->state == PLAYING)
+            m_detail->bioscopeThread->addFrame( ti.img );
+        else
+            m_detail->displayQueue.clear();
     }
 }
 
@@ -153,11 +156,17 @@ void BioscopeDriver::seek(qint64 ms)
         m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
     }
     m_detail->bioscopeThread->seek( ms );
+    if (m_detail->state == STOPPED) {
+        // give it just one frame
+        m_detail->bioscopeThread->addFrame( & m_detail->frames[0] );
+    }
 }
 
 void BioscopeDriver::enqueueFrame(QImage * img, qint64 ms)
 {
     m_detail->displayQueue.enqueue( Detail::TimedImage(ms, img) );
+    if (m_detail->state == STOPPED)
+        displayOldest();
 }
 
 BioscopeDriver::State BioscopeDriver::state() const
