@@ -11,8 +11,7 @@ BioscopeDriver::BioscopeDriver(QObject *parent) :
     m_timerId(-1),
     m_state(STOPPED),
     m_frames(BUFFER_SIZE),
-    m_displayTime(0),
-    m_referencePlayTime(0),
+    m_referencePlayTime( DISCONTINUITY ),
     m_duration(0), m_width(0), m_height(0)
 {
 }
@@ -49,7 +48,6 @@ void BioscopeDriver::close()
         m_bioscopeThread = NULL;
     }
     m_state = STOPPED;
-    m_displayTime = 0;
     m_duration = 0;
     m_width = m_height = 0;
 }
@@ -60,7 +58,7 @@ void BioscopeDriver::play()
     m_timerId = startTimer(TICK_INTERVAL);
     m_state = PLAYING;
 
-    m_referencePlayTime = m_displayTime = m_bioscopeThread->time();
+    m_referencePlayTime = DISCONTINUITY;
     m_referenceTimer.start();
 
     // schedule the frame reads
@@ -79,16 +77,21 @@ void BioscopeDriver::stop()
 
 void BioscopeDriver::timerEvent(QTimerEvent *)
 {
-    m_referencePlayTime += m_referenceTimer.restart();
-    // drop late frames
-    while( ! m_displayQueue.isEmpty() && m_displayQueue.head().ms < m_referencePlayTime+20 ) {
-        emit scheduleFrame( *(m_displayQueue.dequeue().img) );
+    if (m_referencePlayTime != DISCONTINUITY) {
+        m_referencePlayTime += m_referenceTimer.restart();
+        // drop late frames
+        while( ! m_displayQueue.isEmpty() && m_displayQueue.head().ms < m_referencePlayTime+20 ) {
+            emit scheduleFrame( *(m_displayQueue.dequeue().img) );
+        }
     }
 
     if ( ! m_displayQueue.isEmpty() ) {
         // display oldest available image and schedule read
         TimedImage ti = m_displayQueue.dequeue();
+        if (m_referencePlayTime == DISCONTINUITY)
+            m_referencePlayTime = ti.ms;
         emit display( *(ti.img) );
+
         // after having displayed m_frame is available for reading
         emit scheduleFrame( *(ti.img) );
     }
@@ -96,7 +99,7 @@ void BioscopeDriver::timerEvent(QTimerEvent *)
 
 qint64 BioscopeDriver::time() const
 {
-    return m_displayTime;
+    return m_referencePlayTime;
 }
 
 qint64 BioscopeDriver::duration() const
@@ -116,12 +119,12 @@ int BioscopeDriver::height() const
 
 void BioscopeDriver::seek(qint64 ms)
 {
-    emit scheduleSeek(m_referencePlayTime = ms);
+    emit scheduleSeek(ms);
+    m_referencePlayTime = DISCONTINUITY;
     m_referenceTimer.start();
 }
 
 void BioscopeDriver::enqueueFrame(QImage &img, qint64 ms)
 {
     m_displayQueue.enqueue(TimedImage(ms, &img));
-    m_displayTime = ms;
 }

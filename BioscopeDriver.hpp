@@ -14,6 +14,9 @@ public:
         STOPPED,
         PLAYING
     };
+    // time value at discontinuities
+    static const qint64 DISCONTINUITY = -1;
+
     BioscopeDriver(QObject *parent = 0);
     ~BioscopeDriver();
 
@@ -53,7 +56,6 @@ private:
         TimedImage(qint64 _ms, QImage * _img) : ms(_ms), img(_img) {}
     };
     QQueue< TimedImage > m_displayQueue;
-    qint64 m_displayTime;
 
     QTime m_referenceTimer;
     qint64 m_referencePlayTime;
