@@ -26,7 +26,7 @@ public:
 
 signals:
     void streamEnd();
-    void frameRead(QImage * addFrame, qint64 ms);
+    void frameRead(QImage * frame, qint64 ms);
 public slots:
 
 private slots:

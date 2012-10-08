@@ -144,8 +144,11 @@ int BioscopeDriver::height() const
 void BioscopeDriver::seek(qint64 ms)
 {
     m_detail->referencePlayTime = DISCONTINUITY;
+
+    while( ! m_detail->displayQueue.isEmpty() ) {
+        m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
+    }
     m_detail->bioscopeThread->seek( ms );
-    dropDisplayQueue();
 }
 
 void BioscopeDriver::enqueueFrame(QImage * img, qint64 ms)
@@ -158,9 +161,3 @@ BioscopeDriver::State BioscopeDriver::state() const
     return m_detail->state;
 }
 
-void BioscopeDriver::dropDisplayQueue()
-{
-    while( ! m_detail->displayQueue.isEmpty() ) {
-        m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
-    }
-}

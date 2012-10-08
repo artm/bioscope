@@ -42,8 +42,6 @@ public slots:
 private:
     void timerEvent(QTimerEvent *);
 
-    void dropDisplayQueue();
-
     class Detail;
     QScopedPointer<Detail> m_detail;
 };

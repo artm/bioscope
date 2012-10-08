@@ -10,7 +10,6 @@ BioscopeThread::BioscopeThread(const QString& path, QObject *parent) :
 
 void BioscopeThread::seek(qint64 ms)
 {
-    // this way multiple seek requests between reads will get squashed into one
     QMutexLocker locker(&m_mutex);
     m_seekReq = ms;
 }
