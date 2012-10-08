@@ -38,19 +38,25 @@ public slots:
     void stop();
     void seek(qint64 ms);
 
+    void enqueueFrame(QImage& img, qint64 ms);
+
 private:
     void timerEvent(QTimerEvent *);
 
     BioscopeThread * m_bioscopeThread;
     int m_timerId;
     State m_state;
-    QImage m_frame;
+    QVector<QImage> m_frames;
+    QQueue<QImage*> m_displayQueue;
+    qint64 m_displayTime;
 
     // cached metadata
     qint64 m_duration;
     int m_width, m_height;
 
+
     static const int TICK_INTERVAL;
+    static const int BUFFER_SIZE;
 };
 
 #endif // BIOSCOPEDRIVER_HPP

@@ -23,7 +23,7 @@ public:
     qint64 time() const { return m_time; }
 signals:
     void streamEnd();
-    void frameRead(QImage frame);
+    void frameRead(QImage& frame, qint64 ms);
 public slots:
     void seek(qint64 ms); // schedule seek
     void frame(QImage& img); // schedule frame reading / decoding

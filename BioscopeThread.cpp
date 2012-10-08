@@ -21,7 +21,8 @@ void BioscopeThread::frame(QImage &img)
         m_time = m_seekReq;
         m_seekReq = -1;
     }
+    qint64 time = m_bioscope->time();
     m_bioscope->frame( img );
     m_time = m_bioscope->time();
-    emit frameRead( img );
+    emit frameRead( img, time );
 }

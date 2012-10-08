@@ -140,39 +140,20 @@ void TestWithin( T actual, T expected, T margin,
 
 #define TEST_IS_WITHIN(actual, expected, margin) TestWithin((actual), (expected), (margin), #actual, #expected, __FILE__, __LINE__)
 
-void BioscopeTestSuite::on_display(QImage)
-{
-    int ms = m_stopwatch.restart();
-    TEST_IS_WITHIN( ms, MS_PER_FRAME, MS_PER_FRAME);
-    m_expectedTime += ms;
-
-    BioscopeDriver * driver = qobject_cast<BioscopeDriver*>(sender());
-    TEST_IS_WITHIN( m_expectedTime, driver->time(), (qint64)MS_PER_FRAME);
-}
-
 void BioscopeTestSuite::testBioscopeDriver_play()
 {
     BioscopeDriver driver;
-    connect(&driver, SIGNAL(display(QImage)), SLOT(on_display(QImage)));
-
     driver.open(m_goodFilename);
-
-    QSignalSpy spy(&driver, SIGNAL(display(QImage)));
 
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
     driver.play();
-    QCOMPARE( driver.state(), BioscopeDriver::PLAYING );
     m_stopwatch.start();
-    m_expectedTime = 0;
-
-    int delay = 1000;
-    QTest::qWait(delay);
-
+    QCOMPARE( driver.state(), BioscopeDriver::PLAYING );
+    QTest::qWait(1000);
     driver.stop();
+    int playTime = m_stopwatch.elapsed();
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
-
-    TEST_IS_WITHIN(spy.count(), delay/MS_PER_FRAME, 2);
-
+    TEST_IS_WITHIN( (int)driver.time(), playTime, MS_PER_FRAME );
 }
 
 void BioscopeTestSuite::testBioscopeDriver_autoStop()
@@ -198,15 +179,17 @@ void BioscopeTestSuite::testBioscopeGUI_timing()
     w.showMaximized();
 
     BioscopeDriver * driver = w.findChild<BioscopeDriver*>("bioscope");
-    connect(driver, SIGNAL(display(QImage)), SLOT(on_display(QImage)));
 
     QWidget * play = w.findChild<QWidget*>("playBut");
     QWidget * stop = w.findChild<QWidget*>("stopBut");
 
     QTest::mouseClick(play, Qt::LeftButton);
     m_stopwatch.start();
-    m_expectedTime = 0;
-    QTest::qWait(2000);
-
+    QTest::qWait(5000);
     QTest::mouseClick(stop, Qt::LeftButton);
+
+    int playTime = m_stopwatch.elapsed();
+    QCOMPARE( driver->state(), BioscopeDriver::STOPPED );
+    TEST_IS_WITHIN( (int)driver->time(), playTime, MS_PER_FRAME );
 }
+
