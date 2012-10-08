@@ -51,9 +51,7 @@ void BioscopeDriver::open(const QString &path)
 {
     close();
     m_detail->bioscopeThread = new BioscopeThread(path, this);
-    connect(this, SIGNAL(scheduleSeek(qint64)), m_detail->bioscopeThread, SLOT(seek(qint64)));
-    connect(this, SIGNAL(scheduleFrame(QImage&)), m_detail->bioscopeThread, SLOT(frame(QImage&)));
-    connect(m_detail->bioscopeThread, SIGNAL(frameRead(QImage&, qint64)), SLOT(enqueueFrame(QImage&, qint64)));
+    connect(m_detail->bioscopeThread, SIGNAL(frameRead(QImage*, qint64)), SLOT(enqueueFrame(QImage*, qint64)));
     connect(m_detail->bioscopeThread, SIGNAL(streamEnd()), SLOT(stop()));
 
     Bioscope* bios = m_detail->bioscopeThread->findChild<Bioscope*>();
@@ -89,7 +87,7 @@ void BioscopeDriver::play()
 
     // schedule the frame reads
     for(int i=0; i<m_detail->frames.count(); ++i)
-        emit scheduleFrame( m_detail->frames[i] );
+        m_detail->bioscopeThread->addFrame( & m_detail->frames[i] );
 }
 
 void BioscopeDriver::stop()
@@ -106,8 +104,8 @@ void BioscopeDriver::timerEvent(QTimerEvent *)
     if (m_detail->referencePlayTime != DISCONTINUITY) {
         m_detail->referencePlayTime += m_detail->referenceTimer.restart();
         // drop late frames
-        while( ! m_detail->displayQueue.isEmpty() && m_detail->displayQueue.head().ms < m_detail->referencePlayTime+20 ) {
-            emit scheduleFrame( *(m_detail->displayQueue.dequeue().img) );
+        while( ! m_detail->displayQueue.isEmpty() && m_detail->displayQueue.head().ms < m_detail->referencePlayTime ) {
+            m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
         }
     }
 
@@ -119,7 +117,7 @@ void BioscopeDriver::timerEvent(QTimerEvent *)
         emit display( *(ti.img) );
 
         // after having displayed m_detail->frame is available for reading
-        emit scheduleFrame( *(ti.img) );
+        m_detail->bioscopeThread->addFrame( ti.img );
     }
 }
 
@@ -145,17 +143,24 @@ int BioscopeDriver::height() const
 
 void BioscopeDriver::seek(qint64 ms)
 {
-    emit scheduleSeek(ms);
     m_detail->referencePlayTime = DISCONTINUITY;
-    m_detail->referenceTimer.start();
+    m_detail->bioscopeThread->seek( ms );
+    dropDisplayQueue();
 }
 
-void BioscopeDriver::enqueueFrame(QImage &img, qint64 ms)
+void BioscopeDriver::enqueueFrame(QImage * img, qint64 ms)
 {
-    m_detail->displayQueue.enqueue( Detail::TimedImage(ms, &img) );
+    m_detail->displayQueue.enqueue( Detail::TimedImage(ms, img) );
 }
 
 BioscopeDriver::State BioscopeDriver::state() const
 {
     return m_detail->state;
+}
+
+void BioscopeDriver::dropDisplayQueue()
+{
+    while( ! m_detail->displayQueue.isEmpty() ) {
+        m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
+    }
 }

@@ -25,6 +25,7 @@ private slots:
     void testBioscopeDriver_metadata();
     void testBioscopeDriver_play();
     void testBioscopeDriver_autoStop();
+    void testBioscopeDriver_seekWhileRolling();
 
     void testBioscopeGUI_timing();
 

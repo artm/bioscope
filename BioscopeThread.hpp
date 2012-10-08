@@ -19,18 +19,28 @@ class BioscopeThread : public QThread
 public:
     BioscopeThread(const QString& path, QObject *parent = 0);
 
-    // thread safe
     qint64 time() const { return m_time; }
+    void quit();
+    void seek(qint64 ms); // schedule seek
+    void addFrame(QImage * img); // schedule frame reading / decoding
+
 signals:
     void streamEnd();
-    void frameRead(QImage& frame, qint64 ms);
+    void frameRead(QImage * addFrame, qint64 ms);
 public slots:
-    void seek(qint64 ms); // schedule seek
-    void frame(QImage& img); // schedule frame reading / decoding
-    // use quit() to schedule exit
+
+private slots:
+    void run();
+
 private:
+
     Bioscope * m_bioscope;
     qint64 m_seekReq, m_time;
+    QQueue< QImage * > m_imagePool;
+
+    QMutex m_mutex;
+    QWaitCondition m_imageInThePool;
+    bool m_quit;
 };
 
 #endif // BIOSCOPETHREAD_HPP

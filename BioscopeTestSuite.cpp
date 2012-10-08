@@ -82,7 +82,7 @@ void BioscopeTestSuite::testBioscope_rollRead()
             break;
         lastFrame = frameNum;
 
-        bios.frame(frame);
+        bios.frame( &frame );
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);
@@ -106,7 +106,7 @@ void BioscopeTestSuite::testBioscope_seekRead()
 
         bios.seek( frameNum * MS_PER_FRAME);
         QCOMPARE( bios.time(), (long long)(frameNum * MS_PER_FRAME) );
-        bios.frame(frame);
+        bios.frame( &frame );
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);
@@ -171,6 +171,34 @@ void BioscopeTestSuite::testBioscopeDriver_autoStop()
     QTest::qWait(600);
     QCOMPARE( driver.state(), BioscopeDriver::STOPPED );
 }
+
+void BioscopeTestSuite::testBioscopeDriver_seekWhileRolling()
+{
+    BioscopeDriver driver;
+    driver.open(m_goodFilename);
+    driver.play();
+
+    int waitTime = 200, seekTime = 5000;
+
+    QTest::qWait(waitTime);
+    driver.seek(seekTime);
+    QTest::qWait(waitTime);
+    driver.stop();
+    TEST_IS_WITHIN( (int)driver.time(), seekTime + waitTime, 2 * MS_PER_FRAME );
+
+    // seek backwards
+    seekTime = driver.time() / 2;
+    driver.play();
+
+    QTest::qWait(waitTime);
+    driver.seek(seekTime);
+    QTest::qWait(waitTime);
+    driver.stop();
+    TEST_IS_WITHIN( (int)driver.time(), seekTime + waitTime, 2 * MS_PER_FRAME );
+
+}
+
+
 
 void BioscopeTestSuite::testBioscopeGUI_timing()
 {

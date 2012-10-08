@@ -160,7 +160,7 @@ int Bioscope::height() const
     return m_detail->height;
 }
 
-void Bioscope::frame(QImage& img)
+void Bioscope::frame(QImage * img)
 {
     AVPacket packet;
     int done = 0;
@@ -173,17 +173,17 @@ void Bioscope::frame(QImage& img)
                         &packet);
             if (done) {
                 /* if frame isn't compatible - change it */
-                if (img.width() != m_detail->width
-                        || img.height() != m_detail->height
-                        || img.format() != QImage::Format_RGB888) {
-                    img = QImage(m_detail->width, m_detail->height, QImage::Format_RGB888  );
+                if (img->width() != m_detail->width
+                        || img->height() != m_detail->height
+                        || img->format() != QImage::Format_RGB888) {
+                    *img = QImage(m_detail->width, m_detail->height, QImage::Format_RGB888  );
                 }
 
                 avpicture_fill((AVPicture *)m_detail->frameRGB,
-                               (uint8_t*) img.bits(),
+                               (uint8_t*) img->bits(),
                                PIX_FMT_RGB24,
-                               img.width(),
-                               img.height());
+                               img->width(),
+                               img->height());
 
                 sws_scale(m_detail->convertContext,
                           m_detail->frame->data, m_detail->frame->linesize, 0,

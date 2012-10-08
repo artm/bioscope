@@ -29,10 +29,6 @@ public:
     int height() const;
 
 signals:
-    // to be connected to m_bioscopeThread...
-    void scheduleSeek(qint64 ms);
-    void scheduleFrame(QImage& img);
-
     // emitted at playback rate
     void display(QImage img);
 
@@ -41,10 +37,12 @@ public slots:
     void stop();
     void seek(qint64 ms);
 
-    void enqueueFrame(QImage& img, qint64 ms);
+    void enqueueFrame(QImage * img, qint64 ms);
 
 private:
     void timerEvent(QTimerEvent *);
+
+    void dropDisplayQueue();
 
     class Detail;
     QScopedPointer<Detail> m_detail;
