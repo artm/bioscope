@@ -22,7 +22,7 @@ public:
 
     void open(const QString& path);
     void close();
-    State state() const { return m_state; }
+    State state() const;
     qint64 duration() const;
     qint64 time() const;
     int width() const;
@@ -46,26 +46,8 @@ public slots:
 private:
     void timerEvent(QTimerEvent *);
 
-    BioscopeThread * m_bioscopeThread;
-    int m_timerId;
-    State m_state;
-    QVector<QImage> m_frames;
-    struct TimedImage {
-        qint64 ms;
-        QImage * img;
-        TimedImage(qint64 _ms, QImage * _img) : ms(_ms), img(_img) {}
-    };
-    QQueue< TimedImage > m_displayQueue;
-
-    QTime m_referenceTimer;
-    qint64 m_referencePlayTime;
-
-    // cached metadata
-    qint64 m_duration;
-    int m_width, m_height;
-
-    static const int TICK_INTERVAL;
-    static const int BUFFER_SIZE;
+    class Detail;
+    QScopedPointer<Detail> m_detail;
 };
 
 #endif // BIOSCOPEDRIVER_HPP
