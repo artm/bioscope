@@ -40,13 +40,6 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QPushButton" name="backBut">
-        <property name="text">
-         <string>back</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="playBut">
         <property name="text">
          <string>play</string>
@@ -57,13 +50,6 @@
        <widget class="QPushButton" name="stopBut">
         <property name="text">
          <string>stop</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="nextBut">
-        <property name="text">
-         <string>next</string>
         </property>
        </widget>
       </item>
