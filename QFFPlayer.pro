@@ -1,7 +1,13 @@
 QT       += core gui
-CONFIG   += link_pkgconfig uitools qtestlib precompile_header
+CONFIG   += uitools qtestlib precompile_header
 
-PKGCONFIG += libavformat libavcodec libavutil libswscale
+INCLUDEPATH += ../ffmpeg-0.8.5
+LIBS += ../ffmpeg-0.8.5-debug/libavcodec/libavcodec.a \
+        ../ffmpeg-0.8.5-debug/libavformat/libavformat.a \
+        ../ffmpeg-0.8.5-debug/libavutil/libavutil.a \
+        ../ffmpeg-0.8.5-debug/libswscale/libswscale.a
+LIBS += -Wl,-framework,Cocoa -lm -lz
+
 # this is somehow necessary for ffmpeg libraries
 DEFINES += __STDC_CONSTANT_MACROS
 QMAKE_CXXFLAGS +=  -Wno-deprecated -Wno-deprecated-declarations -Wno-attributes
