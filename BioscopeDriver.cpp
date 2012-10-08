@@ -108,7 +108,11 @@ void BioscopeDriver::timerEvent(QTimerEvent *)
             m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
         }
     }
+    displayOldest();
+}
 
+void BioscopeDriver::displayOldest()
+{
     if ( ! m_detail->displayQueue.isEmpty() ) {
         // display oldest available image and schedule read
         Detail::TimedImage ti = m_detail->displayQueue.dequeue();

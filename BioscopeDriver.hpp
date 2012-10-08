@@ -42,6 +42,8 @@ public slots:
 private:
     void timerEvent(QTimerEvent *);
 
+    void displayOldest();
+
     class Detail;
     QScopedPointer<Detail> m_detail;
 };
