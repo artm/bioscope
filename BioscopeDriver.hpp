@@ -41,6 +41,7 @@ private:
     Bioscope * m_bioscope;
     int m_timerId;
     State m_state;
+    QImage m_frame;
 
     static const int TICK_INTERVAL;
 };

@@ -72,8 +72,9 @@ qint64 BioscopeDriver::duration() const
 void BioscopeDriver::emitCurrentFrame()
 {
     qint64 time = m_bioscope->time();
-    QImage frame = m_bioscope->frame();
-    emit timedFrame( time , frame );
+
+    m_bioscope->frame( m_frame );
+    emit timedFrame( time , m_frame );
 }
 
 int BioscopeDriver::width() const

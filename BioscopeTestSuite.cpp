@@ -70,9 +70,10 @@ void BioscopeTestSuite::testBioscope_rollRead()
     Bioscope bios(m_goodFilename);
     QDir dir(QString(m_goodFilename).replace(QRegExp("[^\\.]+$"), "frames"));
 
+    QImage frame;
     int lastFrame = -1; // this way we skip seek the first time
     foreach(QString refFile, dir.entryList(QStringList() << "*.png", QDir::NoFilter, QDir::Name)) {
-        QImage refFrame, frame;
+        QImage refFrame;
         QVERIFY( FRAME_NUM_RE.exactMatch( refFile ) );
         int frameNum = FRAME_NUM_RE.cap(1).toInt() - 1;
         QVERIFY( refFrame.load(dir.filePath( refFile) ));
@@ -81,7 +82,7 @@ void BioscopeTestSuite::testBioscope_rollRead()
             break;
         lastFrame = frameNum;
 
-        frame = bios.frame();
+        bios.frame(frame);
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);
@@ -95,16 +96,17 @@ void BioscopeTestSuite::testBioscope_seekRead()
     Bioscope bios(m_goodFilename);
     QDir dir(QString(m_goodFilename).replace(QRegExp("[^\\.]+$"), "frames"));
 
+    QImage frame;
     // load dumped frames one by one and compare to corresponding frames decoded by bios
     foreach(QString refFile, dir.entryList(QStringList() << "*.png", QDir::NoFilter, QDir::Name)) {
-        QImage refFrame, frame;
+        QImage refFrame;
         QVERIFY( FRAME_NUM_RE.exactMatch( refFile ) );
         int frameNum = FRAME_NUM_RE.cap(1).toInt() - 1;
         QVERIFY( refFrame.load(dir.filePath( refFile) ));
 
         bios.seek( frameNum * MS_PER_FRAME);
         QCOMPARE( bios.time(), (long long)(frameNum * MS_PER_FRAME) );
-        frame = bios.frame();
+        bios.frame(frame);
         refFrame = refFrame.convertToFormat( frame.format() );
 
         QCOMPARE(frame, refFrame);

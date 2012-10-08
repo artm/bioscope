@@ -33,7 +33,7 @@ public:
     qint64 duration() const;
     int width() const;
     int height() const;
-    QImage frame();
+    void frame(QImage& frame);
     void seek( qint64 ms );
     qint64 time();
 

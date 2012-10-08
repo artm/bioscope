@@ -9,7 +9,6 @@ struct Bioscope::Detail {
     int vStreamIndex;
     AVFrame * frame;
     AVFrame * frameRGB;
-    QByteArray frameBytes;
     SwsContext * convertContext;
 
     /* cached metadata */
@@ -122,17 +121,6 @@ Bioscope::Bioscope(const QString & _path, QObject *parent) :
 
     m_detail->frame = avcodec_alloc_frame();
     m_detail->frameRGB = avcodec_alloc_frame();
-    int bufSize = avpicture_get_size(PIX_FMT_RGB24,
-                                     m_detail->width,
-                                     m_detail->height);
-
-    m_detail->frameBytes = QByteArray(bufSize, 0);
-    avpicture_fill((AVPicture *)m_detail->frameRGB,
-                   (uint8_t*) m_detail->frameBytes.data(),
-                   PIX_FMT_RGB24,
-                   m_detail->width,
-                   m_detail->height);
-
     m_detail->convertContext = sws_getContext(m_detail->width, m_detail->height,
                                               m_detail->codecContext->pix_fmt,
                                               m_detail->width, m_detail->height,
@@ -172,7 +160,7 @@ int Bioscope::height() const
     return m_detail->height;
 }
 
-QImage Bioscope::frame()
+void Bioscope::frame(QImage& img)
 {
     AVPacket packet;
     int done = 0;
@@ -184,6 +172,19 @@ QImage Bioscope::frame()
                         &done,
                         &packet);
             if (done) {
+                /* if frame isn't compatible - change it */
+                if (img.width() != m_detail->width
+                        || img.height() != m_detail->height
+                        || img.format() != QImage::Format_RGB888) {
+                    img = QImage(m_detail->width, m_detail->height, QImage::Format_RGB888  );
+                }
+
+                avpicture_fill((AVPicture *)m_detail->frameRGB,
+                               (uint8_t*) img.bits(),
+                               PIX_FMT_RGB24,
+                               img.width(),
+                               img.height());
+
                 sws_scale(m_detail->convertContext,
                           m_detail->frame->data, m_detail->frame->linesize, 0,
                           m_detail->codecContext->height,
@@ -191,17 +192,12 @@ QImage Bioscope::frame()
 
                 m_detail->last_pts = packet.pts + packet.duration; // assuming each frame is a single packet in MJPEG
 
-                // convert to QImage and return
-                return QImage((uchar*)m_detail->frameBytes.data(),
-                               m_detail->codecContext->width,
-                               m_detail->codecContext->height,
-                               QImage::Format_RGB888);
+                return;
             }
         }
     }
 
     emit streamEnd();
-    return QImage();
 }
 
 void Bioscope::seek(qint64 ms)
