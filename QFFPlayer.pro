@@ -37,3 +37,7 @@ FORMS += \
 
 RESOURCES += \
     player.qrc
+
+OTHER_FILES += \
+    README.md
+
