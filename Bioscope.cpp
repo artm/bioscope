@@ -16,14 +16,14 @@ struct Bioscope::Detail {
     int width, height;
 
     /* remember the time */
-    qint64 last_pts;
+    double last_pts;
 
     Detail() :
         formatContext(0), codecContext(0), codec(0),
         vStreamIndex(-1),
         frame(0), frameRGB(0), convertContext(0),
         duration(0), width(0), height(0),
-        last_pts(0)
+        last_pts(0.0)
     {
         if (!avInitialized) {
             av_register_all();
@@ -125,8 +125,6 @@ Bioscope::Bioscope(const QString & _path, QObject *parent) :
                                               m_detail->codecContext->pix_fmt,
                                               m_detail->width, m_detail->height,
                                               PIX_FMT_RGB24, SWS_BICUBIC, 0, 0, 0);
-
-
 }
 
 Bioscope::~Bioscope()
@@ -164,8 +162,14 @@ void Bioscope::frame(QImage * img)
 {
     AVPacket packet;
     int done = 0;
+
+    int accum_duration = 0;
+
     while (av_read_frame(m_detail->formatContext, &packet) >= 0) {
         if (packet.stream_index == m_detail->vStreamIndex) {
+
+            accum_duration += packet.duration;
+
             avcodec_decode_video2(
                         m_detail->codecContext,
                         m_detail->frame,
@@ -190,7 +194,7 @@ void Bioscope::frame(QImage * img)
                           m_detail->codecContext->height,
                           m_detail->frameRGB->data, m_detail->frameRGB->linesize);
 
-                m_detail->last_pts = packet.pts + packet.duration; // assuming each frame is a single packet in MJPEG
+                m_detail->last_pts += accum_duration;
 
                 return;
             }
@@ -206,14 +210,13 @@ void Bioscope::seek(qint64 ms)
     AVRational sec = { (int)ms, 1000};
     AVRational ts = av_div_q(sec,
                              m_detail->formatContext->streams[m_detail->vStreamIndex]->time_base);
-    m_detail->last_pts = ts.num / ts.den;
-    av_seek_frame(m_detail->formatContext, m_detail->vStreamIndex, m_detail->last_pts, 0);
+    m_detail->last_pts = av_q2d( ts );
+    av_seek_frame(m_detail->formatContext, m_detail->vStreamIndex,
+                  (qint64)floor(m_detail->last_pts + 0.5), 0);
 }
 
 qint64 Bioscope::time()
 {
-    AVRational pts = { m_detail->last_pts, 1 };
-    AVRational time_base = m_detail->formatContext->streams[m_detail->vStreamIndex]->time_base;
-    AVRational t = av_mul_q(pts, time_base);
-    return 1000 * t.num / t.den; // ms
+    AVRational time_base = m_detail->formatContext->streams[m_detail->vStreamIndex]->time_base;    
+    return (qint64) floor(1000.0 * m_detail->last_pts * av_q2d( time_base ) + 0.5);
 }
