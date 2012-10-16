@@ -1,12 +1,15 @@
 QT       += core gui
 CONFIG   += uitools qtestlib precompile_header
 
-INCLUDEPATH += ../ffmpeg-0.8.5
-LIBS += ../ffmpeg-0.8.5-debug/libavcodec/libavcodec.a \
-        ../ffmpeg-0.8.5-debug/libavformat/libavformat.a \
-        ../ffmpeg-0.8.5-debug/libavutil/libavutil.a \
-        ../ffmpeg-0.8.5-debug/libswscale/libswscale.a
-LIBS += -Wl,-framework,Cocoa -lm -lz
+INCLUDEPATH += ../ffmpeg-0.8.5 ../ffmpeg-0.8.5-debug
+LIBS += \
+    ../ffmpeg-0.8.5-debug/libavformat/libavformat.a \
+    ../ffmpeg-0.8.5-debug/libavcodec/libavcodec.a \
+    ../ffmpeg-0.8.5-debug/libavutil/libavutil.a \
+    ../ffmpeg-0.8.5-debug/libswscale/libswscale.a
+LIBS += -lm
+win32:LIBS += -lpthreadGC2 -lpsapi
+macx:LIBS += -Wl,-framework,Cocoa -lz
 
 # this is somehow necessary for ffmpeg libraries
 DEFINES += __STDC_CONSTANT_MACROS
