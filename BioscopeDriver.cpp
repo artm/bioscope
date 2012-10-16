@@ -21,7 +21,7 @@ struct BioscopeDriver::Detail {
     qint64 duration;
     int width, height;
 
-    static const int TICK_INTERVAL = 40;
+    static const int TICK_INTERVAL = 1000/25;
     static const int BUFFER_SIZE = 2;
 
     Detail() :
@@ -104,7 +104,8 @@ void BioscopeDriver::timerEvent(QTimerEvent *)
     if (m_detail->referencePlayTime != DISCONTINUITY) {
         m_detail->referencePlayTime += m_detail->referenceTimer.restart();
         // drop late frames
-        while( ! m_detail->displayQueue.isEmpty() && m_detail->displayQueue.head().ms < m_detail->referencePlayTime ) {
+        while( ! m_detail->displayQueue.isEmpty()
+               && m_detail->displayQueue.head().ms < m_detail->referencePlayTime - Detail::TICK_INTERVAL/2 ) {
             m_detail->bioscopeThread->addFrame( m_detail->displayQueue.dequeue().img );
         }
     }
