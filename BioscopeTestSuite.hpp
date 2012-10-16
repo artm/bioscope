@@ -33,6 +33,13 @@ private slots:
 private:
     QStringList m_args;
     QString m_goodFilename, m_badFilename;
+
+    struct MetaData {
+        qint64 duration;
+        int width, height;
+    };
+    MetaData m_goodMetaData;
+
     QTime m_stopwatch;
 
     static const QRegExp FRAME_NUM_RE;

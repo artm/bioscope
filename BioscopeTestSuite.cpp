@@ -3,6 +3,68 @@
 #include "BioscopeDriver.hpp"
 #include "PlayerShell.hpp"
 
+template <typename T>
+void TestWithin( T actual, T expected, T margin,
+                 const char * actualStr,
+                 const char * expectedStr,
+                 const char * file, int line
+                 )
+{
+    T delta = abs(actual-expected);
+    if ( delta > margin )
+        QTest::qFail(qPrintable(
+                  QString( "\n   The difference between [%1 = %2] and [%3 = %4] above margin [%5 > %6]")
+                  .arg(actualStr).arg(actual).arg(expectedStr).arg(expected).arg(delta).arg(margin)), file, line );
+}
+
+#define TEST_IS_WITHIN(actual, expected, margin) TestWithin((actual), (expected), (margin), #actual, #expected, __FILE__, __LINE__)
+
+void CompareImages(const QImage& actual, const QImage& expected,
+                   QString failureMessage,
+                   const char * actualStr, const char * expectedStr,
+                   const char * file, int line)
+{
+    bool ok = true;
+
+    ok = ok && QTest::compare_helper( actual.width() == expected.width(),
+                           qPrintable(
+                               QString("Widths of %1 (%2) and %3 (%4) differ")
+                               .arg(actualStr).arg(actual.width())
+                               .arg(expectedStr).arg(expected.width())),
+                               file, line );
+    ok = ok && QTest::compare_helper( actual.height() == expected.height(),
+                           qPrintable(
+                               QString("Heights of %1 (%2) and %3 (%4) differ")
+                               .arg(actualStr).arg(actual.height())
+                               .arg(expectedStr).arg(expected.height())),
+                               file, line );
+    ok = ok && QTest::compare_helper( actual.format() == expected.format(),
+                           qPrintable(
+                               QString("Formats of %1 (%2) and %3 (%4) differ")
+                               .arg(actualStr).arg( actual.format())
+                               .arg(expectedStr).arg(expected.format())),
+                               file, line );
+    for(int i=0; i<actual.width(); ++i) {
+        for (int j=0; j<actual.height(); ++j) {
+            QRgb apixel = actual.pixel(i, j), epixel = expected.pixel(i, j);
+            if (!QTest::compare_helper(
+                        apixel == epixel,
+                        qPrintable(
+                            QString("Pixels @ %1x%2 of %3 and %4 differ: %5 vs %6")
+                            .arg(i).arg(j).arg(actualStr).arg(expectedStr)
+                            .arg(QColor(apixel).name()).arg(QColor(epixel).name())),
+                        file, line))
+                ok = false;
+                goto out;
+        }
+    }
+out:
+    if (!ok)
+        qCritical() << qPrintable( failureMessage );
+}
+
+#define QCOMPARE_IMAGES(imgA,imgB,failureMessage) CompareImages(imgA, imgB, failureMessage, # imgA, # imgB, __FILE__, __LINE__);
+
 const int BioscopeTestSuite::MS_PER_FRAME = 1000/25;
 const QRegExp BioscopeTestSuite::FRAME_NUM_RE(".*(\\d+)\\.png$");
 
@@ -41,7 +103,17 @@ void BioscopeTestSuite::cleanupTestCase()
 
 void BioscopeTestSuite::init()
 {
+#ifdef Q_WS_WIN32
+    m_goodFilename = "data/test.avi";
+    m_goodMetaData.duration = 13120;
+    m_goodMetaData.width = 640;
+    m_goodMetaData.height = 360;
+#else
     m_goodFilename = "data/edje.mov";
+    m_goodMetaData.duration = 196760;
+    m_goodMetaData.width = 320;
+    m_goodMetaData.height = 180;
+#endif
     m_badFilename = "data/bad-movie.mov";
 }
 
@@ -59,9 +131,9 @@ void BioscopeTestSuite::testBioscope_supportedFile()
 void BioscopeTestSuite::testBioscope_metadata()
 {
     Bioscope bios(m_goodFilename);
-    QCOMPARE(bios.duration(), 196760LL);
-    QCOMPARE(bios.width(), 320);
-    QCOMPARE(bios.height(), 180);
+    QCOMPARE(bios.duration(), m_goodMetaData.duration);
+    QCOMPARE(bios.width(), m_goodMetaData.width);
+    QCOMPARE(bios.height(), m_goodMetaData.height);
 }
 
 void BioscopeTestSuite::testBioscope_rollRead()
@@ -69,10 +141,14 @@ void BioscopeTestSuite::testBioscope_rollRead()
     // reading without seeking
     Bioscope bios(m_goodFilename);
     QDir dir(QString(m_goodFilename).replace(QRegExp("[^\\.]+$"), "frames"));
+    QVERIFY(dir.exists());
+    QStringList refFiles = dir.entryList(QStringList() << "*.png",
+                                         QDir::NoFilter, QDir::Name);
+    QVERIFY(refFiles.count() > 0);
 
     QImage frame;
     int lastFrame = -1; // this way we skip seek the first time
-    foreach(QString refFile, dir.entryList(QStringList() << "*.png", QDir::NoFilter, QDir::Name)) {
+    foreach(QString refFile, refFiles) {
         QImage refFrame;
         QVERIFY( FRAME_NUM_RE.exactMatch( refFile ) );
         int frameNum = FRAME_NUM_RE.cap(1).toInt() - 1;
@@ -85,7 +161,7 @@ void BioscopeTestSuite::testBioscope_rollRead()
         bios.frame( &frame );
         refFrame = refFrame.convertToFormat( frame.format() );
 
-        QCOMPARE(frame, refFrame);
+        QCOMPARE_IMAGES(frame, refFrame, QString("at frame #%1").arg(frameNum));
         QCOMPARE( bios.time(), (long long)((frameNum + 1) * MS_PER_FRAME) );
     }
 }
@@ -95,6 +171,10 @@ void BioscopeTestSuite::testBioscope_seekRead()
     // reading with seeking (to each frame in turn)
     Bioscope bios(m_goodFilename);
     QDir dir(QString(m_goodFilename).replace(QRegExp("[^\\.]+$"), "frames"));
+    QVERIFY(dir.exists());
+    QStringList refFiles = dir.entryList(QStringList() << "*.png",
+                                         QDir::NoFilter, QDir::Name);
+    QVERIFY(refFiles.count() > 0);
 
     QImage frame;
     // load dumped frames one by one and compare to corresponding frames decoded by bios
@@ -109,7 +189,7 @@ void BioscopeTestSuite::testBioscope_seekRead()
         bios.frame( &frame );
         refFrame = refFrame.convertToFormat( frame.format() );
 
-        QCOMPARE(frame, refFrame);
+        QCOMPARE_IMAGES(frame, refFrame, QString("at frame #%1").arg(frameNum));
         QCOMPARE( bios.time(), (long long)((frameNum + 1) * MS_PER_FRAME) );
     }
 }
@@ -118,27 +198,10 @@ void BioscopeTestSuite::testBioscopeDriver_metadata()
 {
     BioscopeDriver driver;
     driver.open(m_goodFilename);
-    QCOMPARE(driver.duration(), 196760LL);
-    QCOMPARE(driver.width(), 320);
-    QCOMPARE(driver.height(), 180);
+    QCOMPARE(driver.duration(), m_goodMetaData.duration);
+    QCOMPARE(driver.width(), m_goodMetaData.width);
+    QCOMPARE(driver.height(), m_goodMetaData.height);
 }
-
-template <typename T>
-void TestWithin( T actual, T expected, T margin,
-                 const char * actualStr,
-                 const char * expectedStr,
-                 const char * file, int line
-                 )
-{
-    T delta = abs(actual-expected);
-    if ( delta > margin )
-        QTest::qFail(qPrintable(
-                  QString( "\n   The difference between [%1 = %2] and [%3 = %4] above margin [%5 > %6]")
-                  .arg(actualStr).arg(actual).arg(expectedStr).arg(expected).arg(delta).arg(margin)), file, line );
-
-}
-
-#define TEST_IS_WITHIN(actual, expected, margin) TestWithin((actual), (expected), (margin), #actual, #expected, __FILE__, __LINE__)
 
 void BioscopeTestSuite::testBioscopeDriver_play()
 {
@@ -233,7 +296,7 @@ void BioscopeTestSuite::testBioscopeGUI_timing()
 
     QTest::mouseClick(play, Qt::LeftButton);
     m_stopwatch.start();
-    QTest::qWait(5000);
+    QTest::qWait(13000);
     QTest::mouseClick(stop, Qt::LeftButton);
 
     int playTime = m_stopwatch.elapsed();
