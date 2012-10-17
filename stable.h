@@ -14,5 +14,6 @@ extern "C" {
 #include <QtGui>
 #include <QUiLoader>
 #include <QtTest>
+#include <QtOpenGL>
 
 #endif

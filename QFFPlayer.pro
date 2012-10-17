@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui opengl
 CONFIG   += uitools qtestlib precompile_header
 
 INCLUDEPATH += ../ffmpeg-0.8.5 ../ffmpeg-0.8.5-debug
