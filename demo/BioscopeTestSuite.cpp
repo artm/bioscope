@@ -1,7 +1,9 @@
+#include <Bioscope.hpp>
+#include <BioscopeDriver.hpp>
+
 #include "BioscopeTestSuite.hpp"
-#include "Bioscope.hpp"
-#include "BioscopeDriver.hpp"
 #include "PlayerShell.hpp"
+
 
 template <typename T>
 void TestWithin( T actual, T expected, T margin,

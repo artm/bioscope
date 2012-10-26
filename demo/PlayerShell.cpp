@@ -1,6 +1,7 @@
+#include <Bioscope.hpp>
+#include <BioscopeDriver.hpp>
+
 #include "PlayerShell.hpp"
-#include "Bioscope.hpp"
-#include "BioscopeDriver.hpp"
 
 struct PlayerShell::Detail {
     BioscopeDriver * driver;
